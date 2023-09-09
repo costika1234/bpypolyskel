@@ -262,16 +262,21 @@ class _LAV:
     def from_chain(cls, head, slav):
         lav = cls(slav)
         lav.head = head
+
         for vertex in lav:
             lav._len += 1
             vertex.lav = lav
+
         return lav
 
     def invalidate(self, vertex):
         assert vertex.lav is self, "Tried to invalidate a vertex that's not mine"
+
         vertex._valid = False
+
         if self.head == vertex:
             self.head = self.head.next
+
         vertex.lav = None
 
     def unify(self, vertex_a, vertex_b, point):
@@ -301,11 +306,13 @@ class _LAV:
         return self._len
 
     def __iter__(self):
-        cur = self.head
+        curr = self.head
+
         while True:
-            yield cur
-            cur = cur.next
-            if cur == self.head:
+            yield curr
+            curr = curr.next
+
+            if curr == self.head:
                 return
 
 
@@ -349,7 +356,8 @@ class _SLAV:
 
         p = v_prev.bisector.intersect(v_next.bisector)
         arcs = []
-        # from edge event
+
+        # From edge event.
         arcs.append(
             Subtree(
                 ev_edge.intersection_point,
@@ -398,6 +406,7 @@ class _SLAV:
         x = None  # next vertex
         y = None  # previous vertex
         norm = event.opposite_edge.norm
+
         for v in chain.from_iterable(self._lavs):
             if norm == v.edge_prev.norm and event.opposite_edge.p1 == v.edge_prev.p1:
                 x = v
@@ -443,6 +452,7 @@ class _SLAV:
 
         new_lavs = None
         self._lavs.remove(lav)
+
         if lav != x.lav:
             # the split event actually merges two lavs
             self._lavs.remove(x.lav)
@@ -488,10 +498,12 @@ class _EventQueue:
     def getAllEqualDistance(self):
         item = heapq.heappop(self.__data)
         equalDistanceList = [item]
-        # from top of queue, get all events that have the same distance as the one on top
+
+        # From top of queue, get all events that have the same distance as the one on top.
         while self.__data and abs(self.__data[0].distance - item.distance) < 0.001:
             queueTop = heapq.heappop(self.__data)
             equalDistanceList.append(queueTop)
+
         return equalDistanceList
 
     def empty(self):
@@ -510,18 +522,22 @@ def checkEdgeCrossing(skeleton):
     sk_edges = []
     for arc in skeleton:
         p1 = arc.source
+
         for p2 in arc.sinks:
             sk_edges.append(Edge2(p1, p2))
 
     combs = combinations(sk_edges, 2)
     nrOfIntsects = 0
+
     for e in combs:
-        # check for intersection, exclude endpoints
+        # Check for intersection, exclude endpoints.
         denom = ((e[0].p2.x - e[0].p1.x) * (e[1].p2.y - e[1].p1.y)) - (
             (e[0].p2.y - e[0].p1.y) * (e[1].p2.x - e[1].p1.x)
         )
+
         if not denom:
             continue
+
         n1 = ((e[0].p1.y - e[1].p1.y) * (e[1].p2.x - e[1].p1.x)) - (
             (e[0].p1.x - e[1].p1.x) * (e[1].p2.y - e[1].p1.y)
         )
@@ -530,10 +546,12 @@ def checkEdgeCrossing(skeleton):
             (e[0].p1.x - e[1].p1.x) * (e[0].p2.y - e[0].p1.y)
         )
         s = n2 / denom
+
         if (r <= EPSILON or r >= 1.0 - EPSILON) or (s <= EPSILON or s >= 1.0 - EPSILON):
             continue  # no intersection
         else:
             nrOfIntsects += 1
+
     return nrOfIntsects
 
 
@@ -547,17 +565,21 @@ def removeGhosts(skeleton):
         source = arc.source
         # search for nearly parallel edges in all sinks from this node
         sinksAltered = True
+
         while sinksAltered:
             sinksAltered = False
             combs = combinations(arc.sinks, 2)
+
             for pair in combs:
                 s0 = pair[0] - source
                 s1 = pair[1] - source
                 s0m = s0.magnitude
                 s1m = s1.magnitude
+
                 if s0m != 0.0 and s1m != 0.0:
                     # check if this pair of edges is parallel
                     dotCosineAbs = abs(s0.dot(s1) / (s0m * s1m) - 1.0)
+
                     if dotCosineAbs < PARALLEL:
                         if s0m < s1m:
                             farSink = pair[1]
@@ -603,22 +625,27 @@ def detectApses(outerContour):
             for p, n in _iterCircularPrevNext(outerContour)
         ]
     )
+
     # special case, see test_306011654_pescara_pattinodromo
     if all([p == 'L' for p in sequence]):
         return None
     N = len(sequence)
+
     # match at least 6 low angles in sequence (assume that the first match is longest)
     pattern = re.compile(r"(L){6,}")
     # sequence may be circular, like 'LLHHHHHLLLLL'
     matches = [r for r in pattern.finditer(sequence + sequence)]
+
     if not matches:
         return None
 
     centers = []
     # circular overlapping pattern must start in first sequence
     nextStart = 0
+
     for apse in matches:
         s = apse.span()[0]
+
         if s < N and s >= nextStart:
             apseIndices = [i % len(sequence) for i in range(*apse.span())]
             apseVertices = [outerContour[i].p1 for i in apseIndices]
@@ -631,18 +658,22 @@ def detectApses(outerContour):
 def findClusters(skeleton, candidates, contourVertices, edgeContours, thresh):
     apseCenters = detectApses(edgeContours[0])
     clusters = []
+
     while candidates:
         c0 = candidates[0]
         cluster = [c0]
         ref = skeleton[c0]
+
         for c in candidates[1:]:
             arc = skeleton[c]
             # use Manhattan distance
             if abs(ref.source.x - arc.source.x) + abs(ref.source.y - arc.source.y) < thresh:
                 cluster.append(c)
+
         for c in cluster:
             if c in candidates:
                 candidates.remove(c)
+
         if len(cluster) > 1:
             # if cluster is near to an apse center, don't merge any nodes
             if apseCenters:
@@ -699,12 +730,14 @@ def mergeCluster(skeleton, cluster):
         y += skeleton[node].source.y
         height += skeleton[node].height
         mergedSources.append(skeleton[node].source)
+
     N = len(cluster)
     new_source = mathutils.Vector((x / N, y / N))
     new_height = height / N
 
     # collect all sinks of merged nodes, that point outside the cluster
     new_sinks = []
+
     for node in cluster:
         for sink in skeleton[node].sinks:
             if sink not in mergedSources and sink not in new_sinks:
@@ -718,12 +751,14 @@ def mergeCluster(skeleton, cluster):
     for arc in skeleton:
         if arc.source not in mergedSources:
             to_remove = []
+
             for i, sink in enumerate(arc.sinks):
                 if sink in mergedSources:
                     if new_source in arc.sinks:
                         to_remove.append(i)
                     else:
                         arc.sinks[i] = new_source
+
             for i in sorted(to_remove, reverse=True):
                 del arc.sinks[i]
 
@@ -731,6 +766,7 @@ def mergeCluster(skeleton, cluster):
     # and add the new node
     for i in sorted(nodesToMerge, reverse=True):
         del skeleton[i]
+
     skeleton.append(newnode)
 
 
@@ -740,33 +776,39 @@ def mergeNodeClusters(skeleton, edgeContours):
     to_remove = []
     for i, p in enumerate(skeleton):
         source = tuple(i for i in p.source)
+
         if source in sources:
             source_index = sources[source]
-            # source exists, merge sinks
+
+            # Source exists, merge sinks.
             for sink in p.sinks:
                 if sink not in skeleton[source_index].sinks:
                     skeleton[source_index].sinks.append(sink)
+
             to_remove.append(i)
         else:
             sources[source] = i
+
     for i in reversed(to_remove):
         skeleton.pop(i)
 
     contourVertices = [edge.p1 for contour in edgeContours for edge in contour]
 
-    # Merge all clusters that have small distances due to floating-point inaccuracies
+    # Merge all clusters that have small distances due to floating-point inaccuracies.
     smallThresh = 0.1
     hadCluster = True
     while hadCluster:
         hadCluster = False
-        # find clusters within short range and short height difference
+        # Find clusters within short range and short height difference.
         candidates = [c for c in range(len(skeleton))]
         clusters = findClusters(skeleton, candidates, contourVertices, edgeContours, smallThresh)
-        # check if there are cluster candidates
+
+        # Check if there are cluster candidates.
         if not clusters:
             break
+
         hadCluster = True
-        # use largest cluster
+        # Use largest cluster.
         cluster = max(clusters, key=lambda clstr: len(clstr))
         mergeCluster(skeleton, cluster)
 
@@ -789,8 +831,9 @@ def detectDormers(slav, edgeContours):
         [coder(p.norm.cross(n.norm)) for p, n in _iterCircularPrevNext(outerContour)]
     )
     N = len(sequence)
-    # match a pattern of almost rectangular turns to right, then to left, to left and again to right
-    # positive lookahead used to find overlapping patterns
+
+    # Match a pattern of almost rectangular turns to right, then to left, to left and again to
+    # right. Positive lookahead used to find overlapping patterns.
     pattern = re.compile(r"(?=(RLLR))")
     # sequence may be circular, like 'LRLL000LL00RL', therefore concatenate two of them
     matches = [r for r in pattern.finditer(sequence + sequence)]
@@ -800,6 +843,7 @@ def detectDormers(slav, edgeContours):
     nextStart = 0
     for dormer in matches:
         s = dormer.span()[0]
+
         if s < N and s >= nextStart:
             oi = [i % len(sequence) for i in range(*(s, s + 4))]  # indices of candidate dormer
             dormerIndices.append(oi)
@@ -810,6 +854,7 @@ def detectDormers(slav, edgeContours):
     for oi1, oi2 in zip(dormerIndices, dormerIndices[1:] + dormerIndices[:1]):
         if oi1[3] == oi2[0]:
             toRemove.extend([oi1, oi2])
+
     for sp in toRemove:
         if sp in dormerIndices:
             dormerIndices.remove(sp)
@@ -817,12 +862,15 @@ def detectDormers(slav, edgeContours):
     # check if contour consists only of dormers, if yes then skip, can't handle that
     # (special case for test_51340792_yekaterinburg_mashinnaya_35a)
     dormerVerts = set()
+
     for oi in dormerIndices:
         dormerVerts.update(oi)
+
     if len(dormerVerts) == len(outerContour):
         return []
 
     dormers = []
+
     for oi in dormerIndices:
         w = outerContour[oi[1]].length_squared()  # length^2 of base edge
         d1 = outerContour[oi[0]].length_squared()  # length^2 of side edge
@@ -832,6 +880,7 @@ def detectDormers(slav, edgeContours):
         d4 = outerContour[oi[3]].length_squared()  # length^2 of next edge
         facLeft = 0.125 if sequence[(s + N - 1) % N] != 'L' else 1.5
         facRight = 0.125 if sequence[(s + 4) % N] != 'L' else 1.5
+
         if w < 100 and d < 0.35 and d3 >= w * facLeft and d4 >= w * facRight:
             dormers.append((oi, (outerContour[oi[1]].p1 - outerContour[oi[1]].p2).magnitude))
 
@@ -841,6 +890,7 @@ def detectDormers(slav, edgeContours):
 def processDormers(dormers, initialEvents):
     dormerEvents = []
     dormerEventIndices = []
+
     for dormer in dormers:
         dormerIndices = dormer[0]
         d_events = [ev for i, ev in enumerate(initialEvents) if i in dormerIndices]
@@ -851,18 +901,21 @@ def processDormers(dormers, initialEvents):
                 or not isinstance(d_events[3], _SplitEvent)
             ):
                 continue
+
             ev_prev = d_events[0]
             ev_next = d_events[3]
             v_prev = ev_prev.vertex
             v_next = ev_next.vertex
             p = v_prev.bisector.intersect(v_next.bisector)
             d = dormer[1] / 2.0
-            # process events:                         split1       split2       edge
+
+            # Process events:                         split1       split2       edge
             dormerEvents.append(DormerEvent(d, p, [d_events[0], d_events[3], d_events[1]]))
             dormerEventIndices.extend(dormerIndices)
 
     remainingEvents = [ev for i, ev in enumerate(initialEvents) if i not in dormerEventIndices]
     del initialEvents[:]
+
     initialEvents.extend(remainingEvents)
     initialEvents.extend(dormerEvents)
 
@@ -919,6 +972,7 @@ def skeletonize(edgeContours):
 
     while not (prioque.empty() or slav.empty()):
         topEventList = prioque.getAllEqualDistance()
+
         for i in topEventList:
             if isinstance(i, _EdgeEvent):
                 if not i.vertex_a.is_valid or not i.vertex_b.is_valid:
@@ -1033,14 +1087,16 @@ def polygonize(
     # assume that all vertices of polygon and holes have the same z-value
     zBase = verts[firstVertIndex][2]
 
-    # compute center of gravity of polygon
+    # Compute center of gravity of polygon.
     center = mathutils.Vector((0.0, 0.0, 0.0))
+
     for i in range(firstVertIndex, firstVertIndex + numVerts):
         center += verts[i]
+
     center /= numVerts
     center[2] = 0.0
 
-    # create 2D edges as list and as contours for skeletonization and graph construction
+    # Create 2D edges as list and as contours for skeletonization and graph construction.
     lastUIndex = numVerts - 1
     lastVertIndex = firstVertIndex + lastUIndex
     if unitVectors:
@@ -1058,6 +1114,7 @@ def polygonize(
     edgeContours = [edges2D.copy()]
 
     uIndex = numVerts
+
     if holesInfo:
         for firstVertIndexHole, numVertsHole in holesInfo:
             lastVertIndexHole = firstVertIndexHole + numVertsHole - 1
@@ -1088,7 +1145,7 @@ def polygonize(
             edgeContours.append(holeEdges)
             uIndex += numVertsHole
 
-    # compute skeleton
+    # Compute skeleton.
     skeleton = skeletonize(edgeContours)
 
     # evetual debug output of skeleton
@@ -1102,17 +1159,20 @@ def polygonize(
         tan_alpha = height / maxSkelHeight
     else:
         tan_alpha = tan
+
     skeleton_nodes3D = []
+
     for arc in skeleton:
         node = mathutils.Vector((arc.source.x, arc.source.y, arc.height * tan_alpha + zBase))
         skeleton_nodes3D.append(node + center)
+
     firstSkelIndex = len(verts)  # first skeleton index in verts
     verts.extend(skeleton_nodes3D)
 
-    # instantiate the graph for faces
+    # Instantiate the graph for faces.
     graph = poly2FacesGraph()
 
-    # add polygon and hole indices to graph using indices in verts
+    # Add polygon and hole indices to graph using indices in verts.
     for edge in _iterCircularPrevNext(range(firstVertIndex, firstVertIndex + numVerts)):
         graph.add_edge(edge)
 
@@ -1123,7 +1183,7 @@ def polygonize(
             ):
                 graph.add_edge(edge)
 
-    # add skeleton edges to graph using indices in verts
+    # Add skeleton edges to graph using indices in verts.
     for index, arc in enumerate(skeleton):
         aIndex = index + firstSkelIndex
         for sink in arc.sinks:
@@ -1139,17 +1199,19 @@ def polygonize(
                     sIndex = -1  # error
             graph.add_edge((aIndex, sIndex))
 
-    # generate clockwise circular embedding
+    # Generate clockwise circular embedding.
     embedding = graph.circular_embedding(verts, 'CCW')
 
-    # compute list of faces, the vertex indices are still related to verts2D
+    # Compute list of faces, the vertex indices are still related to verts2D.
     faces3D = graph.faces(embedding, firstSkelIndex)
 
-    # find and remove spikes in faces
+    # Find and remove spikes in faces.
     hadSpikes = True
+
     while hadSpikes:
         hadSpikes = False
-        # find spike
+
+        # Find spike.
         for face in faces3D:
             if len(face) <= 3:  # a triangle is not considered as spike
                 continue
@@ -1160,11 +1222,14 @@ def polygonize(
                 s1 = s1.xy
                 s0m = s0.magnitude
                 s1m = s1.magnitude
+
                 if s0m and s1m:
                     dotCosine = s0.dot(s1) / (s0m * s1m)
                 else:
                     continue
+
                 crossSine = s0.cross(s1)
+
                 if abs(dotCosine + 1.0) < PARALLEL and crossSine > -EPSILON:  # spike edge to left
                     # the spike's peak is at 'this'
                     hadSpikes = True
@@ -1179,9 +1244,11 @@ def polygonize(
             # on right side it must have adjacent vertices in the order 'this' -> 'prev',
             # on left side it must have adjacent vertices in the order '_next' -> 'this',
             rightIndx, leftIndx = (None, None)
+
             for i, f in enumerate(faces3D):
                 if [p for p, n in _iterCircularPrevNext(f) if p == this and n == prev]:
                     rightIndx = i
+
                 if [p for p, n in _iterCircularPrevNext(f) if p == _next and n == this]:
                     leftIndx = i
 
@@ -1235,6 +1302,7 @@ def polygonize(
     for face in faces3D:
         if len(face) > 3:  # a triangle cant have parallel edges
             verticesToRemove = []
+
             for prev, this, _next in _iterCircularPrevThisNext(face):
                 # Can eventually remove vertice, if it appears only in
                 # two adjacent faces, otherwise its a node.
@@ -1253,19 +1321,22 @@ def polygonize(
                     else:
                         if this not in verticesToRemove:  # duplicate vertice
                             verticesToRemove.append(this)
+
             for item in verticesToRemove:
                 face.remove(item)
 
         # remove one of adjacent identical vertices
         verticesToRemove = []
+
         for prev, _next in _iterCircularPrevNext(face):
             if prev == _next:
                 verticesToRemove.append(prev)
+
         for item in verticesToRemove:
             face.remove(item)
 
     if faces is None:
         return faces3D
-    else:
-        faces.extend(faces3D)
-        return faces
+
+    faces.extend(faces3D)
+    return faces
