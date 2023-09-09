@@ -1,12 +1,15 @@
 import mathutils
 
+
 # From https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/.
 def ccw(A, B, C):
     return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
 
+
 # Return true if line segments AB and CD intersect.
 def intersect(A, B, C, D):
     return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+
 
 def _intersect_line2_line2(A, B):
     d = B.v.y * A.v.x - B.v.x * A.v.y
@@ -27,6 +30,7 @@ def _intersect_line2_line2(A, B):
         return None
 
     return mathutils.Vector((A.p.x + ua * A.v.x, A.p.y + ua * A.v.y))
+
 
 def _intersect_point_line(C, A, B):
     # Drop a perpendicular from C to line AB and return
@@ -53,6 +57,26 @@ def _intersect_point_line(C, A, B):
         y = m_AB * x + n_AB
 
     return mathutils.Vector((x, y))
+
+
+def fit_circle_3_points(points):
+    # Circle through three points using complex math, see answer in
+    # https://stackoverflow.com/questions/28910718/give-3-points-and-a-plot-circle.
+    N = len(points)
+
+    x = complex(points[0].x, points[0].y)
+    y = complex(points[N // 2].x, points[N // 2].y)
+    z = complex(points[-1].x, points[-1].y)
+
+    w = z - x
+    w /= y - x
+    c = (x - y) * (w - abs(w) ** 2) / 2j / w.imag - x
+
+    x0 = -c.real
+    y0 = -c.imag
+    R = abs(c + x)
+
+    return mathutils.Vector((x0, y0)), R
 
 
 class Edge2:
@@ -86,6 +110,7 @@ class Edge2:
     def length_squared(self):
         return (self.p2 - self.p1).length_squared
 
+
 class Ray2:
     def __init__(self, _p, _v):
         self.p = _p
@@ -98,6 +123,7 @@ class Ray2:
 
     def intersect(self, other):
         return _intersect_line2_line2(self, other)
+
 
 class Line2:
     def __init__(self, p1, p2=None, ptype=None):
@@ -125,22 +151,3 @@ class Line2:
         # Note that 'other' is a vector.
         nearest = _intersect_point_line(other, self.p1, self.p2)
         return (other - nearest).length
-
-def fitCircle3Points(points):
-    # Circle through three points using complex math, see answer in
-    # https://stackoverflow.com/questions/28910718/give-3-points-and-a-plot-circle.
-    N = len(points)
-
-    x = complex(points[0].x, points[0].y)
-    y = complex(points[N // 2].x, points[N // 2].y)
-    z = complex(points[-1].x, points[-1].y)
-
-    w = z - x
-    w /= y - x
-    c = (x - y) * (w - abs(w) ** 2) / 2j / w.imag - x
-
-    x0 = -c.real
-    y0 = -c.imag
-    R = abs(c + x)
-
-    return mathutils.Vector((x0, y0)), R
