@@ -1,7 +1,6 @@
-import pytest
 from mathutils import Vector
-from bpypolyskel import bpypolyskel
 
+from bpypolyskel import bpypolyskel
 
 verts = [
     Vector((2.5120503902435303, -2.504688262939453, 0.0)),
@@ -82,4 +81,4 @@ for face in faces:
 
 
 # edge crossing
-assert not bpypolyskel.checkEdgeCrossing(bpypolyskel.debugOutputs["skeleton"])
+assert not bpypolyskel.check_edge_crossing(bpypolyskel.debugOutputs["skeleton"])

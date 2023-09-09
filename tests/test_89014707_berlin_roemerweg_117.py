@@ -1,7 +1,7 @@
 import pytest
 from mathutils import Vector
-from bpypolyskel import bpypolyskel
 
+from bpypolyskel import bpypolyskel
 
 verts = [
     Vector((10.749798774719238, -0.7124329209327698, 0.0)),
@@ -60,4 +60,4 @@ def test_duplication():
 
 @pytest.mark.dependency(depends=["test_polygonize"])
 def test_edgeCrossing():
-    assert not bpypolyskel.checkEdgeCrossing(bpypolyskel.debugOutputs["skeleton"])
+    assert not bpypolyskel.check_edge_crossing(bpypolyskel.debugOutputs["skeleton"])

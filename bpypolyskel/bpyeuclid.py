@@ -21,12 +21,12 @@ def _intersect_line2_line2(A, B):
     dx = A.p.x - B.p.x
     ua = (B.v.x * dy - B.v.y * dx) / d
 
-    if not A.intsecttest(ua):
+    if not A.intersection_test(ua):
         return None
 
     ub = (A.v.x * dy - A.v.y * dx) / d
 
-    if not B.intsecttest(ub):
+    if not B.intersection_test(ub):
         return None
 
     return mathutils.Vector((A.p.x + ua * A.v.x, A.p.y + ua * A.v.y))
@@ -118,7 +118,7 @@ class Ray2:
         self.p2 = _p + _v
         self.v = _v
 
-    def intsecttest(self, u):
+    def intersection_test(self, u):
         return u >= 0.0
 
     def intersect(self, other):
@@ -126,22 +126,22 @@ class Ray2:
 
 
 class Line2:
-    def __init__(self, p1, p2=None, ptype=None):
+    def __init__(self, p1, p2=None, p_type=None):
         # Note that 'p1' is a Line2 or Ray2 object.
         if p2 is None:
             self.p = p1.p1.copy()
             self.v = (p1.p2 - p1.p1).copy()
-        elif ptype == 'pp':
+        elif p_type == 'pp':
             self.p = p1.p.copy()
             self.v = p2 - p1
-        elif ptype == 'pv':
+        elif p_type == 'pv':
             self.p = p1.copy()
             self.v = p2.copy()
 
         self.p1 = self.p
         self.p2 = self.p + self.v
 
-    def intsecttest(self, u):
+    def intersection_test(self, u):
         return True
 
     def intersect(self, other):
