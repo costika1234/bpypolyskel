@@ -3,14 +3,14 @@
 """
 https://github.com/prochitecture/bpypolyskel
 
-Implementation of the straight skeleton algorithm as described by Felkel and Obdržálek in their 1998 conference paper 
+Implementation of the straight skeleton algorithm as described by Felkel and Obdržálek in their 1998 conference paper
 'Straight skeleton implementation'.
 
 The code for skeletonize() has been ported from the implementation by Botffy at https://github.com/Botffy/polyskel,
 in order to be able to use it in Blender. The main changes are:
 
 - The order of the vertices of the polygon has been changed to a right-handed coordinate system
-  (as used in Blender). The positive x and y axes point right and up, and the z axis points into 
+  (as used in Blender). The positive x and y axes point right and up, and the z axis points into
   your face. Positive rotation is counterclockwise around the z-axis.
 - The geometry objects used from the library euclid3 in the implementation of Bottfy have been
   replaced by objects based on mathutils.Vector. These objects are defined in the new library bpyeuclid.
@@ -33,7 +33,7 @@ from .bpyeuclid import *
 from .poly2FacesGraph import poly2FacesGraph
 
 EPSILON = 0.00001
-PARALLEL = 0.01     # set this value to 1-cos(alpha), where alpha is the largest angle 
+PARALLEL = 0.01     # set this value to 1-cos(alpha), where alpha is the largest angle
                     # between lines to accept them as parallelaccepted as 'parallel'.
 
 # Add a key to enable debug output. For example:
@@ -53,7 +53,7 @@ def _iterCircularPrevThisNext(lst):
     prevs = islice(cycle(prevs), len(lst) - 1, None)
     nexts = islice(cycle(nexts), 1, None)
     return zip(prevs, this, nexts)
-    
+
 def _approximately_equals(a, b):
     return a == b or ( (a-b).magnitude <= max( a.magnitude, b.magnitude) * 0.001)
 
@@ -157,7 +157,7 @@ class _LAVertex:
                 # we choose the "less parallel" edge (in order to exclude a potentially parallel edge)
                 prevdot = abs(self.edge_prev.norm.dot(edge.edge.norm))
                 nextdot = abs(self.edge_next.norm.dot(edge.edge.norm))
-                selfedge = self.edge_prev if prevdot < nextdot else self.edge_next 
+                selfedge = self.edge_prev if prevdot < nextdot else self.edge_next
 
                 i = Line2(selfedge).intersect(Line2(edge.edge))
                 if i is not None and not _approximately_equals(i, self.point):
@@ -166,7 +166,7 @@ class _LAVertex:
                     edvec = edge.edge.norm
                     if abs(self.bisector.v.cross(linvec) - 1.0) < EPSILON:
                         linvec = (self.point - i + edvec*0.01 ).normalized()
-                    if self.bisector.v.cross(linvec) < 0: 
+                    if self.bisector.v.cross(linvec) < 0:
                         edvec = -edvec
 
                     bisecvec = edvec + linvec
@@ -327,7 +327,7 @@ class _SLAV:
 
         # from split events
         arcs.append( Subtree(p, (ev_prev.distance+ev_next.distance)/2.0, [v_prev.point,v_next.point])   )
-    
+
         for v in toRemove:
             v.invalidate()
 
@@ -345,7 +345,7 @@ class _SLAV:
                 sinks.append(vertex.point)
                 vertex.invalidate()
         else:
-            # Edge event at intersection            
+            # Edge event at intersection
             new_vertex = lav.unify(event.vertex_a, event.vertex_b, event.intersection_point)
             if lav.head in (event.vertex_a, event.vertex_b):
                 lav.head = new_vertex
@@ -531,7 +531,7 @@ def removeGhosts(skeleton):
                             break
                         else:   # maybe we have a spike that crosses other skeleton edges
                                 # Spikes normally get removed with more success as face-spike in polygonize().
-                                # Remove it here only, if it produces any crossing. 
+                                # Remove it here only, if it produces any crossing.
                             for sink in skeleton[nodeIndex].sinks:
                                 if intersect(source, farSink, nearSink, sink):
                                     skeleton[nodeIndex].sinks.append(farSink)
@@ -566,7 +566,7 @@ def detectApses(outerContour):
             apseVertices = [outerContour[i].p1 for i in apseIndices]
             center, R = fitCircle3Points(apseVertices)
             centers.append(center)
-    
+
     return centers
 
 def findClusters(skeleton, candidates, contourVertices, edgeContours, thresh):
@@ -617,7 +617,7 @@ def findClusters(skeleton, candidates, contourVertices, edgeContours, thresh):
             combs = combinations(contourSinks,2)
             for pair in combs:
                 minDist = min( (pair[0]-pair[1]).magnitude, minDist )
- 
+
             if minDist > 2*thresh:
                 clusters.append(cluster)    # contour sinks too far, so merge
 
@@ -649,7 +649,7 @@ def mergeCluster(skeleton, cluster):
     # create the merged node
     newnode = Subtree(new_source, new_height, new_sinks)
 
-    # redirect all sinks of nodes outside the cluster, that pointed to 
+    # redirect all sinks of nodes outside the cluster, that pointed to
     # one of the clustered nodes, to the new node
     for arc in skeleton:
         if arc.source not in mergedSources:
@@ -658,7 +658,7 @@ def mergeCluster(skeleton, cluster):
                 if sink in mergedSources:
                     if new_source in arc.sinks:
                         to_remove.append(i)
-                    else: 
+                    else:
                         arc.sinks[i] = new_source
             for i in sorted(to_remove, reverse = True):
                 del arc.sinks[i]
@@ -696,7 +696,7 @@ def mergeNodeClusters(skeleton,edgeContours):
         hadCluster = False
         # find clusters within short range and short height difference
         candidates = [c for c in range(len(skeleton))]
-        clusters = findClusters(skeleton,candidates,contourVertices,edgeContours,smallThresh) 
+        clusters = findClusters(skeleton,candidates,contourVertices,edgeContours,smallThresh)
         # check if there are cluster candidates
         if not clusters:
             break
@@ -766,7 +766,7 @@ def detectDormers(slav, edgeContours):
         facRight = 0.125 if sequence[(s+4)%N] != 'L' else 1.5
         if w < 100 and d < 0.35 and d3 >= w*facLeft and d4 >= w*facRight:
             dormers.append((oi,(outerContour[oi[1]].p1-outerContour[oi[1]].p2).magnitude))
-            
+
     return dormers
 
 def processDormers(dormers,initialEvents):
@@ -799,7 +799,7 @@ def processDormers(dormers,initialEvents):
 def skeletonize(edgeContours):
     """
 skeletonize() computes the straight skeleton of a polygon. It accepts a simple description of the
-contour of a footprint polygon, including those of evetual holes, and returns the nodes and edges 
+contour of a footprint polygon, including those of evetual holes, and returns the nodes and edges
 of its straight skeleton.
 
 The polygon is expected as a list of contours, where every contour is a list of edges of type Edge2
@@ -819,14 +819,14 @@ edgeContours:   A list of contours of the polygon and eventually its holes, wher
                 edgeContours = [ polygon_edge,<hole1_edges>, <hole2_edges>, ...]
 
                 polygon_egdes is a list of the edges of the outer polygon contour in counterclockwise
-                order. <hole_edges> is an optional list of the edges of a hole contour in clockwise order. 
+                order. <hole_edges> is an optional list of the edges of a hole contour in clockwise order.
 
 Output:
 ------
 return:         A list of subtrees (of type Subtree) of the straight skeleton. A Subtree contains the
                 attributes (source, height, sinks), where source is the node vertex, height is its
                 distance to the nearest polygon edge, and sinks is a list of vertices connected to the
-                node. All vertices are of type mathutils.Vector with two dimension x and y. 
+                node. All vertices are of type mathutils.Vector with two dimension x and y.
     """
     slav = _SLAV(edgeContours)
 
@@ -974,7 +974,7 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
         ]
         edges2D.append(Edge2(lastVertIndex, firstVertIndex, None, verts, center))
     edgeContours = [edges2D.copy()]
-    
+
     uIndex = numVerts
     if holesInfo:
         for firstVertIndexHole,numVertsHole in holesInfo:
@@ -1022,7 +1022,7 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
     # add polygon and hole indices to graph using indices in verts
     for edge in _iterCircularPrevNext( range(firstVertIndex, firstVertIndex+numVerts) ):
         graph.add_edge(edge)
-    
+
     if holesInfo:
         for firstVertIndexHole,numVertsHole in holesInfo:
             for edge in _iterCircularPrevNext( range(firstVertIndexHole, firstVertIndexHole+numVertsHole) ):
@@ -1062,7 +1062,7 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
                 s0 = verts[this]-verts[prev]  # verts are 3D vectors
                 s1 = verts[_next]-verts[this]
                 s0 = s0.xy  # need 2D-vectors
-                s1 = s1.xy 
+                s1 = s1.xy
                 s0m = s0.magnitude
                 s1m = s1.magnitude
                 if s0m and s1m:
@@ -1121,7 +1121,7 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
             mergedFace = mergedFace[nextOrigIndex:] + mergedFace[:nextOrigIndex]
 
             if mergedFace == face:  # no change, will result in endless loop
-                raise Exception('Endless loop in spike removal') 
+                raise Exception('Endless loop in spike removal')
 
             face.remove(this) # remove the spike
             for i in sorted([rightIndx,leftIndx], reverse = True):
@@ -1137,7 +1137,7 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
         if len(face) > 3:   # a triangle cant have parallel edges
             verticesToRemove = []
             for prev, this, _next in _iterCircularPrevThisNext(face):
-                # Can eventually remove vertice, if it appears only in 
+                # Can eventually remove vertice, if it appears only in
                 # two adjacent faces, otherwise its a node.
                 # But do not remove original polygon vertices.
                 if counts[this] < 3 and this >= firstSkelIndex:
@@ -1153,9 +1153,9 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
                             verticesToRemove.append(this)
                     else:
                         if this not in verticesToRemove:    # duplicate vertice
-                            verticesToRemove.append(this)   
+                            verticesToRemove.append(this)
             for item in verticesToRemove:
-                face.remove(item) 
+                face.remove(item)
 
         # remove one of adjacent identical vertices
         verticesToRemove = []
@@ -1163,7 +1163,7 @@ def polygonize(verts, firstVertIndex, numVerts, holesInfo=None, height=0., tan=0
             if prev == _next:
                 verticesToRemove.append(prev)
         for item in verticesToRemove:
-            face.remove(item) 
+            face.remove(item)
 
     if faces is None:
         return faces3D
