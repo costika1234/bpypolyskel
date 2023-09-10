@@ -27,7 +27,7 @@ from itertools import chain, combinations, cycle, islice, tee
 import mathutils
 
 from .bpyeuclid import Edge2, Line2, Ray2, fit_circle_3_points, intersect
-from .poly2FacesGraph import poly2FacesGraph
+from .poly2FacesGraph import Poly2FacesGraph
 
 EPSILON = 0.00001
 
@@ -1217,7 +1217,7 @@ def polygonize(
     verts.extend(skeleton_nodes3D)
 
     # Instantiate the graph for faces.
-    graph = poly2FacesGraph()
+    graph = Poly2FacesGraph()
 
     # Add polygon and hole indices to graph using indices in verts.
     for edge in iter_circular_prev_next(
