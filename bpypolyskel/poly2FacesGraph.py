@@ -113,11 +113,11 @@ class Poly2FacesGraph:
                     path.append(edge)
                     edge_set -= {edge}
 
-                    # (Only one iteration).
+                    # Only one iteration.
                     break
             else:
                 if tup in path:
-                    raise Exception('Endless loop catched in Poly2FacesGraph faces().')
+                    raise Exception('Endless loop caught in Poly2FacesGraph faces().')
 
                 path.append(tup)
                 edge_set -= {tup}

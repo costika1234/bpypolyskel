@@ -6,15 +6,25 @@ where the library mathutils is installed as standalone library.
 
 Use 'pip install mathutils'
 """
+import importlib
 import math
-import mathutils
-import matplotlib.pyplot as plt
+import sys
+
+# Try importing the original mathutils library.
+try:
+    mathutils = importlib.import_module('mathutils')
+except ImportError:
+    # Otherwise, use the local 'mathutils'.
+    sys.path.append('./lib')
+    mathutils = importlib.import_module('mathutils')
+
 import sys
 import time
 
-from bpypolyskel import bpypolyskel
+import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 
+from bpypolyskel import bpypolyskel
 
 # Define the outer loop of the floor plan (CCW order).
 _OUTER_LOOP = [
@@ -103,6 +113,7 @@ def get_roof_faces(pitch):
         UNIT_VECTORS,
     )
 
+
 def create_roof(pitch, ax):
     ax.clear()
 
@@ -134,7 +145,7 @@ def run_demo():
         valmax=MAX_PITCH,
         valinit=DEFAULT_PITCH,
         valstep=1.0,
-        orientation='vertical'
+        orientation='vertical',
     )
     pitch_slider.on_changed(lambda pitch: create_roof(pitch, ax))
 

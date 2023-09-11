@@ -20,11 +20,19 @@ in order to be able to use it in Blender. The main changes are:
 """
 
 import heapq
+import importlib
 import re
+import sys
 from collections import Counter, namedtuple
 from itertools import chain, combinations, cycle, islice, tee
 
-import mathutils
+# Try importing the original mathutils library.
+try:
+    mathutils = importlib.import_module('mathutils')
+except ImportError:
+    # Otherwise, use the local 'mathutils'.
+    sys.path.append('./lib')
+    mathutils = importlib.import_module('mathutils')
 
 from .bpyeuclid import Edge2, Line2, Ray2, fit_circle_3_points, intersect
 from .poly2FacesGraph import Poly2FacesGraph
@@ -170,7 +178,7 @@ class LAVertex:
                 i = Line2(self_edge).intersect(Line2(edge.edge))
 
                 if i is not None and not approx_equals(i, self.point):
-                    # Locate candidate b/
+                    # Locate candidate b.
                     linvec = (self.point - i).normalized()
                     edvec = edge.edge.norm
 
@@ -191,8 +199,8 @@ class LAVertex:
                     if b is None:
                         continue
 
-                    # Check eligibility of 'b'. a valid b should lie within the area limited
-                    # by the edge and the bisectors of its two vertices.
+                    # Check eligibility of 'b'. A valid 'b' should lie within the area
+                    # limited by the edge and the bisectors of its two vertices.
                     x_prev = (
                         (edge.bisector_prev.v.normalized()).cross(
                             (b - edge.bisector_prev.p).normalized()
@@ -227,7 +235,7 @@ class LAVertex:
         if not events:
             return None
 
-        ev = min(events, key=lambda event: (self.point - event.intersection_point).length)
+        ev = min(events, key=lambda event: (self.point - event.intersection_point).magnitude)
 
         # Generated new event.
         return ev
@@ -857,6 +865,7 @@ def detect_dormers(slav, edge_contours):
             code = 'R'
         else:
             code = '0'
+
         return code
 
     sequence = "".join(
@@ -1272,6 +1281,7 @@ def polygonize(
             # A triangle is not considered as spike.
             if len(face) <= 3:
                 continue
+
             for prev, this, _next in iter_circular_prev_this_next(face):
                 # 'verts' are 3D vectors.
                 s0 = verts[this] - verts[prev]

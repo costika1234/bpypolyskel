@@ -1,4 +1,13 @@
-import mathutils
+import importlib
+import sys
+
+# Try importing the original mathutils library.
+try:
+    mathutils = importlib.import_module('mathutils')
+except ImportError:
+    # Otherwise, use the local 'mathutils'.
+    sys.path.append('./lib')
+    mathutils = importlib.import_module('mathutils')
 
 
 # From https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/.
@@ -150,4 +159,4 @@ class Line2:
     def distance(self, other):
         # Note that 'other' is a vector.
         nearest = _intersect_point_line(other, self.p1, self.p2)
-        return (other - nearest).length
+        return (other - nearest).magnitude
