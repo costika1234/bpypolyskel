@@ -94,7 +94,7 @@ holesInfo = None
 firstVertIndex = 28
 numPolygonVerts = 28
 
-bpypolyskel.debugOutputs["skeleton"] = 1
+bpypolyskel.debug_outputs["skeleton"] = 1
 
 
 faces = bpypolyskel.polygonize(verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, None, unitVectors)
@@ -111,4 +111,4 @@ for face in faces:
 
 
 # edge crossing
-assert not bpypolyskel.check_edge_crossing(bpypolyskel.debugOutputs["skeleton"])
+assert not bpypolyskel.check_edge_crossing(bpypolyskel.debug_outputs["skeleton"])

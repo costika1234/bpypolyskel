@@ -38,22 +38,21 @@ PARALLEL = 0.01
 APSE_PATTERN = re.compile(r"(L){6,}")
 DORMER_PATTERN = re.compile(r"(?=(RLLR))")
 
-# Add a key to enable debug output. For example:
-# debugOutputs["skeleton"] = 1
-# Then the Python list <skeleton> will be added to <debugOutputs> with the key <skeleton>
-# in the function skeletonize(..)
-debugOutputs = {}
+# Add a key to enable debug output. For example: debug_outputs["skeleton"] = 1.
+# Then the Python list <skeleton> will be added to <debug_outputs> with the key <skeleton>
+# in the function 'skeletonize(..)'.
+debug_outputs = {}
 
 
-def iter_circular_prev_next(lst):
-    prevs, nexts = tee(lst)
-    prevs = islice(cycle(prevs), len(lst) - 1, None)
+def iter_circular_prev_next(items):
+    prevs, nexts = tee(items)
+    prevs = islice(cycle(prevs), len(items) - 1, None)
     return zip(prevs, nexts)
 
 
-def iter_circular_prev_this_next(lst):
-    prevs, this, nexts = tee(lst, 3)
-    prevs = islice(cycle(prevs), len(lst) - 1, None)
+def iter_circular_prev_this_next(items):
+    prevs, this, nexts = tee(items, 3)
+    prevs = islice(cycle(prevs), len(items) - 1, None)
     nexts = islice(cycle(nexts), 1, None)
     return zip(prevs, this, nexts)
 
@@ -152,6 +151,7 @@ class LAVertex:
 
     def next_event(self):
         events = []
+
         if self.is_reflex:
             # A reflex vertex may generate a split event.
             # Split events happen when a vertex hits an opposite edge, splitting the polygon in two.
@@ -229,7 +229,7 @@ class LAVertex:
 
         ev = min(events, key=lambda event: (self.point - event.intersection_point).length)
 
-        # Generated new event
+        # Generated new event.
         return ev
 
 
@@ -245,9 +245,9 @@ class LAV:
         lav = cls(slav)
 
         for prev, next in iter_circular_prev_next(edge_contour):
-            # V(i) is the current vertex
-            # prev is the edge from vertex V(i-1) to V(i)
-            # this is the edge from vertex V(i-) to V(i+1)
+            # V(i) is the current vertex.
+            # 'prev' is the edge from vertex V(i-1) to V(i).
+            # 'this' is the edge from vertex V(i-) to V(i+1).
             lav._len += 1
             vertex = LAVertex(next.p1, prev, next)
             vertex.lav = lav
@@ -349,7 +349,7 @@ class SLAV:
         if lav is None:
             return ([], [])
 
-        toRemove = [v_prev, v_prev.next, v_next, v_next.prev]
+        to_remove = [v_prev, v_prev.next, v_next, v_next.prev]
         lav.head = v_prev.prev
 
         v_prev.prev.next = v_next.next
@@ -376,7 +376,7 @@ class SLAV:
             Subtree(p, (ev_prev.distance + ev_next.distance) / 2.0, [v_prev.point, v_next.point])
         )
 
-        for v in toRemove:
+        for v in to_remove:
             v.invalidate()
 
         return (arcs, [])
@@ -515,8 +515,8 @@ class EventQueue:
 
         # From top of queue, get all events that have the same distance as the one on top.
         while self.__data and abs(self.__data[0].distance - item.distance) < 0.001:
-            queueTop = heapq.heappop(self.__data)
-            equal_distance_list.append(queueTop)
+            queue_top = heapq.heappop(self.__data)
+            equal_distance_list.append(queue_top)
 
         return equal_distance_list
 
@@ -614,11 +614,11 @@ def remove_ghosts(skeleton):
                         if not node_index_list:
                             break
 
-                        nodeIndex = node_index_list[0]
+                        node_index = node_index_list[0]
 
                         # We have a ghost edge, sinks almost parallel.
                         if dot_cosine_abs < EPSILON:
-                            skeleton[nodeIndex].sinks.append(far_sink)
+                            skeleton[node_index].sinks.append(far_sink)
                             arc.sinks.remove(far_sink)
                             arc.sinks.remove(near_sink)
                             sinks_altered = True
@@ -626,9 +626,9 @@ def remove_ghosts(skeleton):
                         else:  # maybe we have a spike that crosses other skeleton edges
                             # Spikes normally get removed with more success as face-spike in polygonize().
                             # Remove it here only, if it produces any crossing.
-                            for sink in skeleton[nodeIndex].sinks:
+                            for sink in skeleton[node_index].sinks:
                                 if intersect(source, far_sink, near_sink, sink):
-                                    skeleton[nodeIndex].sinks.append(far_sink)
+                                    skeleton[node_index].sinks.append(far_sink)
                                     arc.sinks.remove(far_sink)
                                     arc.sinks.remove(near_sink)
                                     sinks_altered = True
@@ -697,22 +697,22 @@ def find_clusters(skeleton, candidates, contour_vertices, edge_contours, thresho
         if len(cluster) > 1:
             # If cluster is near to an apse center, don't merge any nodes.
             if apse_centers:
-                isApseCluster = False
+                is_apse_cluster = False
 
-                for apseCenter in apse_centers:
+                for apse_center in apse_centers:
                     for node in cluster:
                         if (
-                            abs(apseCenter.x - skeleton[node].source.x)
-                            + abs(apseCenter.y - skeleton[node].source.y)
+                            abs(apse_center.x - skeleton[node].source.x)
+                            + abs(apse_center.y - skeleton[node].source.y)
                             < 3.0
                         ):
-                            isApseCluster = True
+                            is_apse_cluster = True
                             break
 
-                    if isApseCluster:
+                    if is_apse_cluster:
                         break
 
-                if isApseCluster:
+                if is_apse_cluster:
                     continue
 
             # Detect sinks in this cluster, that are contour vertices of the footprint.
@@ -730,14 +730,14 @@ def find_clusters(skeleton, candidates, contour_vertices, edge_contours, thresho
                 continue
 
             # Two or more contour sinks, maybe its an architectural detail, that we shouldn't merge.
-            # There are only few sinks, so the minimal distance is computed by brute force
-            minDist = 3 * threshold
+            # There are only few sinks, so the minimal distance is computed by brute force.
+            min_dist = 3 * threshold
             combs = combinations(contour_sinks, 2)
 
             for pair in combs:
-                minDist = min((pair[0] - pair[1]).magnitude, minDist)
+                min_dist = min((pair[0] - pair[1]).magnitude, min_dist)
 
-            if minDist > 2 * threshold:
+            if min_dist > 2 * threshold:
                 # Contour sinks too far, so merge.
                 clusters.append(cluster)
 
@@ -883,13 +883,13 @@ def detect_dormers(slav, edge_contours):
             next_start = s + 3
 
     # Filter overlapping dormers.
-    toRemove = []
+    to_remove = []
 
     for oi1, oi2 in zip(dormer_indices, dormer_indices[1:] + dormer_indices[:1]):
         if oi1[3] == oi2[0]:
-            toRemove.extend([oi1, oi2])
+            to_remove.extend([oi1, oi2])
 
-    for sp in toRemove:
+    for sp in to_remove:
         if sp in dormer_indices:
             dormer_indices.remove(sp)
 
@@ -950,10 +950,10 @@ def process_dormers(dormers, initial_events):
             dormer_events.append(DormerEvent(d, p, [d_events[0], d_events[3], d_events[1]]))
             dormer_event_indices.extend(dormer_indices)
 
-    remainingEvents = [ev for i, ev in enumerate(initial_events) if i not in dormer_event_indices]
+    remaining_events = [ev for i, ev in enumerate(initial_events) if i not in dormer_event_indices]
     del initial_events[:]
 
-    initial_events.extend(remainingEvents)
+    initial_events.extend(remaining_events)
     initial_events.extend(dormer_events)
 
 
@@ -1074,9 +1074,9 @@ def polygonize(
                         The list of vertices verts gets extended by `polygonize()`. The new nodes of the straight
                         skeleton are appended at the end of the list.
 
-    first_vertex_index: 	The first index of vertices of the polygon index in the verts list that defines the footprint polygon.
+    first_vertex_index: The first index of vertices of the polygon index in the verts list that defines the footprint polygon.
 
-    vertices_no:           The first index of the vertices in the verts list of the polygon, that defines the outer
+    vertices_no:        The first index of the vertices in the verts list of the polygon, that defines the outer
                         contour of the footprint.
 
     holes_info:          If the footprint polygon contains holes, their position and length in the verts list are
@@ -1100,7 +1100,7 @@ def polygonize(
                         a new list with the new faces created by the straight skeleton is created and returned by
                         polygonize(), else faces is extended by the new list.
 
-    unit_vectors:        A Python list of unit vectors along the polygon edges (including holes if they are present).
+    unit_vectors:       A Python list of unit vectors along the polygon edges (including holes if they are present).
                         These vectors are of type `mathutils.Vector` with three dimensions. The direction of the vectors
                         corresponds to order of the vertices in the polygon and its holes. The order of the unit
                         vectors in the unit_vectors list corresponds to the order of vertices in the input Python list
@@ -1122,7 +1122,7 @@ def polygonize(
                         If a list of faces has been given in the argument faces, it gets extended at its end by the
                         new list.
     """
-    # assume that all vertices of polygon and holes have the same z-value
+    # Assume that all vertices of polygon and holes have the same z-value.
     z_base = verts[first_vertex_index][2]
 
     # Compute center of gravity of polygon.
@@ -1195,15 +1195,15 @@ def polygonize(
     # Compute skeleton.
     skeleton = skeletonize(edge_contours)
 
-    # evetual debug output of skeleton
-    if 'skeleton' in debugOutputs:
-        debugOutputs['skeleton'] = skeleton
+    # Eventual debug output of skeleton.
+    if 'skeleton' in debug_outputs:
+        debug_outputs['skeleton'] = skeleton
 
     # Compute skeleton node heights and append nodes to original verts list.
     # See also issue #4 at https://github.com/prochitecture/bpypolyskel.
     if height:
-        maxSkelHeight = max(arc.height for arc in skeleton)
-        tan_alpha = height / maxSkelHeight
+        max_skel_height = max(arc.height for arc in skeleton)
+        tan_alpha = height / max_skel_height
     else:
         tan_alpha = tan
 
@@ -1234,22 +1234,26 @@ def polygonize(
 
     # Add skeleton edges to graph using indices in verts.
     for index, arc in enumerate(skeleton):
-        aIndex = index + first_skel_index
+        a_index = index + first_skel_index
 
         for sink in arc.sinks:
             # First search in input edges.
             edge = [edge for edge in edges2D if edge.p1 == sink]
 
             if edge:
-                sIndex = edge[0].i1
-            else:  # then it should be a skeleton node
-                skelIndex = [index for index, arc in enumerate(skeleton) if arc.source == sink]
-                if skelIndex:
-                    sIndex = skelIndex[0] + first_skel_index
-                else:
-                    sIndex = -1  # error
+                s_index = edge[0].i1
 
-            graph.add_edge((aIndex, sIndex))
+            # Then it should be a skeleton node.
+            else:
+                skel_index = [index for index, arc in enumerate(skeleton) if arc.source == sink]
+
+                if skel_index:
+                    s_index = skel_index[0] + first_skel_index
+                else:
+                    # Error.
+                    s_index = -1
+
+            graph.add_edge((a_index, s_index))
 
     # Generate clockwise circular embedding.
     embedding = graph.circular_embedding(verts, 'CCW')
@@ -1285,10 +1289,10 @@ def polygonize(
                 else:
                     continue
 
-                crossSine = s0.cross(s1)
+                cross_sine = s0.cross(s1)
 
                 # Spike edge to left.
-                if abs(dot_cosine + 1.0) < PARALLEL and crossSine > -EPSILON:
+                if abs(dot_cosine + 1.0) < PARALLEL and cross_sine > -EPSILON:
                     # The spike's peak is at 'this'.
                     had_spikes = True
                     break

@@ -102,7 +102,7 @@ firstVertIndex = 30
 numPolygonVerts = 30
 faces = []
 
-bpypolyskel.debugOutputs["skeleton"] = 1
+bpypolyskel.debug_outputs["skeleton"] = 1
 
 
 @pytest.mark.dependency()
@@ -126,4 +126,4 @@ def test_duplication():
 
 @pytest.mark.dependency(depends=["test_polygonize"])
 def test_edgeCrossing():
-    assert not bpypolyskel.check_edge_crossing(bpypolyskel.debugOutputs["skeleton"])
+    assert not bpypolyskel.check_edge_crossing(bpypolyskel.debug_outputs["skeleton"])
