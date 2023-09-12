@@ -1,7 +1,7 @@
 import pytest
 from mathutils import Vector
-from bpypolyskel import bpypolyskel
 
+from bpypolyskel import bpypolyskel
 
 verts = [
     Vector((0.0, 10.0, 0.0)),
@@ -9,7 +9,7 @@ verts = [
     Vector((7.0, 0.0, 0.0)),
     Vector((7.0, 4.0, 0.0)),
     Vector((3.0, 4.0, 0.0)),
-    Vector((3.0, 10.0, 0.0))
+    Vector((3.0, 10.0, 0.0)),
 ]
 
 unitVectors = None
@@ -24,7 +24,9 @@ faces = []
 @pytest.mark.timeout(10)
 def test_polygonize():
     global faces
-    faces = bpypolyskel.polygonize(verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, None, unitVectors)
+    faces = bpypolyskel.polygonize(
+        verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, None, unitVectors
+    )
 
 
 @pytest.mark.dependency(depends=["test_polygonize"])
@@ -41,9 +43,11 @@ def test_duplication():
 
 def plot_chart():
     import matplotlib.pyplot as plt
-    
+
     global faces
-    faces = bpypolyskel.polygonize(verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, faces, unitVectors)
+    faces = bpypolyskel.polygonize(
+        verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, faces, unitVectors
+    )
 
     # plot the hipped roof in 3D
     fig = plt.figure()
@@ -52,7 +56,8 @@ def plot_chart():
         for edge in zip(face, face[1:] + face[:1]):
             p1 = verts[edge[0]]
             p2 = verts[edge[1]]
-            ax.plot([p1.x,p2.x],[p1.y,p2.y],[p1.z,p2.z],'k')
+            ax.plot([p1.x, p2.x], [p1.y, p2.y], [p1.z, p2.z], 'k')
     plt.show()
 
-#plot_chart()
+
+# plot_chart()

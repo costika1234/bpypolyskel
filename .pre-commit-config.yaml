@@ -10,7 +10,7 @@ repos:
   rev: 23.9.0
   hooks:
   - id: black
-    exclude: '(debug|misc|tests|tests_special)/.*'
+    exclude: '(debug|misc|tests)/.*'
     args: [
       --line-length=100,
       --skip-string-normalization,
