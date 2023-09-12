@@ -1,7 +1,12 @@
-import math
+from dataclasses import dataclass
 
 
+@dataclass(slots=True)
 class Vector:
+    x: float
+    y: float
+    z: float
+
     def __init__(self, arg):
         self.x = arg[0]
         self.y = arg[1]
@@ -13,7 +18,7 @@ class Vector:
 
     @property
     def magnitude(self):
-        return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+        return (self.x * self.x + self.y * self.y + self.z * self.z) ** 0.5
 
     @property
     def length_squared(self):
