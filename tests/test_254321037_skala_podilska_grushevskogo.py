@@ -29,7 +29,7 @@ verts = [
     Vector((3.3034255504608154, -1.3469648361206055, 2.0)),
     Vector((2.907893180847168, -0.4786730408668518, 2.0)),
     Vector((2.307270050048828, 0.055660225450992584, 2.0)),
-    Vector((1.4356346130371094, 0.35622256994247437, 2.0))
+    Vector((1.4356346130371094, 0.35622256994247437, 2.0)),
 ]
 unitVectors = [
     Vector((-0.6485352516174316, -0.7611846923828125, 0.0)),
@@ -44,7 +44,7 @@ unitVectors = [
     Vector((-0.41454485058784485, 0.910028874874115, 0.0)),
     Vector((-0.7471337914466858, 0.6646737456321716, 0.0)),
     Vector((-0.9453734755516052, 0.32598912715911865, 0.0)),
-    Vector((-0.9705682396888733, -0.24082611501216888, 0.0))
+    Vector((-0.9705682396888733, -0.24082611501216888, 0.0)),
 ]
 holesInfo = None
 firstVertIndex = 13
@@ -58,7 +58,9 @@ bpypolyskel.debug_outputs["skeleton"] = 1
 @pytest.mark.timeout(10)
 def test_polygonize():
     global faces
-    faces = bpypolyskel.polygonize(verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, None, unitVectors)
+    faces = bpypolyskel.polygonize(
+        verts, firstVertIndex, numPolygonVerts, holesInfo, 0.0, 0.5, None, unitVectors
+    )
 
 
 @pytest.mark.dependency(depends=["test_polygonize"])
