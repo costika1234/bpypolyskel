@@ -41,33 +41,6 @@ def _intersect_line2_line2(A, B):
     return mathutils.Vector((A.p.x + ua * A.v.x, A.p.y + ua * A.v.y))
 
 
-def _intersect_point_line(C, A, B):
-    # Drop a perpendicular from C to line AB and return
-    # the coordinates of the intersection point.
-    x1, y1 = A.x, A.y
-    x2, y2 = B.x, B.y
-    x3, y3 = C.x, C.y
-
-    if x1 == x2:
-        x, y = x1, y3
-    elif y1 == y2:
-        x, y = x3, y1
-    else:
-        # Calculate the equation of the line AB (y = mx + n).
-        m_AB = (y2 - y1) / (x2 - x1)
-        n_AB = y1 - m_AB * x1
-
-        # Calculate the equation of the perpendicular line through point C.
-        m_perp = -1 / m_AB
-        n_perp = y3 - m_perp * x3
-
-        # Solve the system of equations to find the intersection point (x, y).
-        x = (n_perp - n_AB) / (m_AB - m_perp)
-        y = m_AB * x + n_AB
-
-    return mathutils.Vector((x, y))
-
-
 def fit_circle_3_points(points):
     # Circle through three points using complex math, see answer in
     # https://stackoverflow.com/questions/28910718/give-3-points-and-a-plot-circle.
@@ -158,5 +131,14 @@ class Line2:
 
     def distance(self, other):
         # Note that 'other' is a vector.
-        nearest = _intersect_point_line(other, self.p1, self.p2)
-        return (other - nearest).magnitude
+        x0, y0 = other.x, other.y
+        x1, y1 = self.p1.x, self.p1.y
+        x2, y2 = self.p2.x, self.p2.y
+
+        x_diff = x2 - x1
+        y_diff = y2 - y1
+
+        return (
+            abs(x_diff * (y1 - y0) - y_diff * (x1 - x0))
+            / (x_diff * x_diff + y_diff * y_diff) ** 0.5
+        )
