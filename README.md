@@ -31,11 +31,12 @@ from .bpypolyskel import bpypolyskel
 The file [&lowbar;&lowbar;init&lowbar;&lowbar;.py](./__init__.py) shows a simple code for usage in an addon. It adds an object created by _bpypolyskel_ to a scene. The demo object is created in Blender by Add -> Mesh -> Add bpypolyskel Demo Object.
 
 ### General purpose application
-The functions of _bpypolyskel_ are also usable using a Python interpreter, but then the installation of the package _mathutils_ is required. Install it using:
+The functions of _bpypolyskel_ are also usable using a Python interpreter. A simple demo in the file [demo.py](./demo.py) shows this type of usage and displays the result using `matplotlib`.
+
+Note that the code used to depend on the `mathutils` package, which might be difficult to install on machines intended for non-development work. The default implementation uses the custom `lib/mathutils.py` module to emulate the C-based vector operations performed by `mathutils`. However, this comes at the expense of longer execution time (almost twice as long for the roof created by `demo.py`). Applications that require the best performance should therefore leverage the `mathutils` package which can be installed via
 ```
 pip install mathutils
 ```
-A simple demo in the file [demo.py](./demo.py) shows this type of usage and displays the result using  `matplotlib`.
 
 ## Credits
 The implementation of the straight skeleton algorithm is based on the description by Felkel and Obdržálek in their 1998 conference paper 
