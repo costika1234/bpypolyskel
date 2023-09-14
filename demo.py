@@ -6,19 +6,20 @@ where the library mathutils is installed as standalone library.
 
 Use 'pip install mathutils'
 """
-import importlib
 import math
+import os
 import sys
 
-# Try importing the original mathutils library.
-try:
-    mathutils = importlib.import_module('mathutils')
-except ImportError:
-    # Otherwise, use the local 'mathutils'.
-    sys.path.append('./lib')
-    mathutils = importlib.import_module('mathutils')
+if os.environ.get('CUSTOM_MATHUTILS') == '1':
+    # Use the custom mathutils from 'lib' directory.
+    from lib import mathutils
+else:
+    # Use the standard mathutils package (if it exists).
+    try:
+        import mathutils
+    except ImportError:
+        from lib import mathutils
 
-import sys
 import time
 
 import matplotlib.pyplot as plt
@@ -166,7 +167,7 @@ def run_benchmark():
 
 if __name__ == '__main__':
     # Execute only if run as a script.
-    if len(sys.argv) == 2 and sys.argv[1] == '--benchmark':
+    if '--benchmark' in sys.argv[1:]:
         run_benchmark()
     else:
         run_demo()

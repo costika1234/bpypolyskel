@@ -20,19 +20,20 @@ in order to be able to use it in Blender. The main changes are:
 """
 
 import heapq
-import importlib
+import os
 import re
-import sys
 from collections import Counter, namedtuple
 from itertools import chain, combinations, cycle, islice, tee
 
-# Try importing the original mathutils library.
-try:
-    mathutils = importlib.import_module('mathutils')
-except ImportError:
-    # Otherwise, use the local 'mathutils'.
-    sys.path.append('./lib')
-    mathutils = importlib.import_module('mathutils')
+if os.environ.get('CUSTOM_MATHUTILS') == '1':
+    # Use the custom mathutils from 'lib' directory.
+    from lib import mathutils
+else:
+    # Use the standard mathutils package (if it exists).
+    try:
+        import mathutils
+    except ImportError:
+        from lib import mathutils
 
 from .bpyeuclid import Edge2, Line2, Ray2, fit_circle_3_points, intersect
 from .poly2FacesGraph import Poly2FacesGraph

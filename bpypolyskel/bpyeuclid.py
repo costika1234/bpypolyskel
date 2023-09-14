@@ -1,13 +1,14 @@
-import importlib
-import sys
+import os
 
-# Try importing the original mathutils library.
-try:
-    mathutils = importlib.import_module('mathutils')
-except ImportError:
-    # Otherwise, use the local 'mathutils'.
-    sys.path.append('./lib')
-    mathutils = importlib.import_module('mathutils')
+if os.environ.get('CUSTOM_MATHUTILS') == '1':
+    # Use the custom mathutils from 'lib' directory.
+    from lib import mathutils
+else:
+    # Use the standard mathutils package (if it exists).
+    try:
+        import mathutils
+    except ImportError:
+        from lib import mathutils
 
 
 # From https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/.

@@ -18,7 +18,7 @@ _polygonize()_ is the main function to compute the faces of a hipped roof from t
 _skeletonize()_ creates the [straight skeleton](https://en.wikipedia.org/wiki/Straight_skeleton) of the footprint. It gets a list of the edges of the footprint polygon, including those of eventual holes, and creates a straight skeleton. This function is called from _polygonize()_, but may also be used independantly. See more details in its [documentation](https://github.com/prochitecture/bpypolyskel/wiki/skeletonize)
 
 ### Note
-The straight skeleton computed by _skeletonize()_ does not provide a straight skeleton in a mathematical sense. Several cleaning and merging algorithms repair issues produced by inaccuracies of the footprint and issues in the skeletonize algorithm. Its goal is to create a skeleton that fits best for a hipped roof. 
+The straight skeleton computed by _skeletonize()_ does not provide a straight skeleton in a mathematical sense. Several cleaning and merging algorithms repair issues produced by inaccuracies of the footprint and issues in the skeletonize algorithm. Its goal is to create a skeleton that fits best for a hipped roof.
 
 ## Installation and Demos
 You find all required files in the folder [bpypolyskel](./bpypolyskel). There are two main applications of this project:
@@ -38,15 +38,30 @@ Note that the code used to depend on the `mathutils` package, which might be dif
 pip install mathutils
 ```
 
+For more flexibility, one can set an environment variable on the command line to override the original `mathutils` library (if already installed on the machine):
+```
+CUSTOM_MATHUTILS=1 python3 demo.py
+```
+
+## Running the tests
+Use
+```
+python3 -m pytest lib/mathutils.py tests && python3 -m pytest lib/mathutils.py tests_special
+```
+to run the tests against the local `mathutils` library. Otherwise, if the original `mathutils` is installed, use
+```
+python3 -m pytest tests && python3 -m pytest tests_special
+```
+
 ## Credits
-The implementation of the straight skeleton algorithm is based on the description by Felkel and Obdržálek in their 1998 conference paper 
+The implementation of the straight skeleton algorithm is based on the description by Felkel and Obdržálek in their 1998 conference paper
 [Straight skeleton implementation](http://www.dma.fi.upm.es/personal/mabellanas/tfcs/skeleton/html/documentacion/Straight%20Skeletons%20Implementation.pdf). The code for the function _skeletonize()_ has been ported from the implementation by [Botffy](https://github.com/Botffy/polyskel).
 
 The main adaptions compared to Botffy's original code are:
 
 - The order of the vertices of the polygon has been changed to a right-handed coordinate system (as used in Blender). The positive x and y axes point right and up, and the z axis points into your face. Positive rotation is counterclockwise around the z-axis.
 - The geometry objects used from the library `euclid3` in the implementation of Bottfy have been replaced by objects based on `mathutils.Vector`. These objects are defined in the new library [bpyeuclid](./bpypolyskel/bpyeuclid.py).
-- The signature of `skeletonize()` has been changed to lists of edges for the polygon and eventual hole. These are of type `Edge2`, defined in [bpyeuclid](./bpypolyskel/bpyeuclid.py). 
+- The signature of `skeletonize()` has been changed to lists of edges for the polygon and eventual hole. These are of type `Edge2`, defined in [bpyeuclid](./bpypolyskel/bpyeuclid.py).
 - Some parts of the skeleton computations have been changed to fix errors produced by the original implementation.
 - Algorithms to merge clusters of skeleton nodes and to filter ghost edges have been added.
 - A pattern matching algorithm to detect apses, that creates a multi-edge event to create a proper apse skeleton.
